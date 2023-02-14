@@ -149,4 +149,28 @@ describe("BondWrapper", function () {
       });
     });
   });
+
+  describe("transferFrom", function() {
+    describe("when caller is whitelisted", function() {
+      it("burn wrapped tokens", async function() {
+        const { owner, bondMarket, random3, bondToken } = await loadFixture(unwrapTokens);
+        await bondToken.connect(bondMarket).approve(owner.address, TRANSFER_AMOUNT);
+        await bondToken.transferFrom(bondMarket.address, random3.address, TRANSFER_AMOUNT);
+        expect(await bondToken.balanceOf(bondMarket.address)).to.be.equal(0);
+      });
+
+      it("transfer origin token", async function() {
+        const { owner, bondMarket, random3, bondToken, wrappedToken } = await loadFixture(unwrapTokens);
+        await bondToken.connect(bondMarket).approve(owner.address, TRANSFER_AMOUNT);
+        await bondToken.transferFrom(bondMarket.address, random3.address, TRANSFER_AMOUNT);
+        expect(await wrappedToken.balanceOf(random3.address)).to.be.equal(TRANSFER_AMOUNT);
+      });
+
+      it("emit Unwrap event", async function() {
+        const { owner, random3, bondMarket, bondToken } = await loadFixture(unwrapTokens);
+        await bondToken.connect(bondMarket).approve(owner.address, TRANSFER_AMOUNT);
+        await expect(bondToken.transferFrom(bondMarket.address, random3.address, TRANSFER_AMOUNT)).to.emit(bondToken, "Unwrap").withArgs(bondMarket.address, random3.address, TRANSFER_AMOUNT);
+      });
+    });
+  });
 });

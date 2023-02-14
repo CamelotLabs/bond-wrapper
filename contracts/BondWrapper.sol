@@ -62,21 +62,17 @@ contract BondWrapper is Ownable, ERC20("Camelot bond wrapper", "bondXGRAIL") {
         xGrailToken.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function transfer(address to, uint256 amount) public virtual override returns (bool) {
-        address sender = msg.sender;
-
+    function _transfer(address from, address to, uint256 amount) internal virtual override {
         // Unwrap
-        if(isBondContract(sender)) {
-            _burn(sender, amount);
+        if(isBondContract(from)) {
+            _burn(from, amount);
             xGrailToken.safeTransfer(to, amount);
-            emit Unwrap(sender, to, amount);
+            emit Unwrap(from, to, amount);
         }
 
         // Regular transfer
         else {
-            _transfer(sender, to, amount);
+            ERC20._transfer(from, to, amount);
         }
-
-        return true;
     }
 }
